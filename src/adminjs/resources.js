@@ -10,7 +10,14 @@ const userResource = {
     },
     properties: {
       password: {
-        isVisible: false
+        isVisible: { 
+          list: false, 
+          filter: false, 
+          show: false, 
+          edit: true 
+        },
+        type: 'password',
+        isRequired: true
       },
       createdAt: {
         isVisible: { list: false, filter: true, show: true, edit: false }
