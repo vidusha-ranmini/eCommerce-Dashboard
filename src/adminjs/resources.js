@@ -256,7 +256,7 @@ const orderResource = {
     },
     properties: {
       id: {
-        isVisible: { list: false, filter: false, show: true, edit: false }
+        isVisible: { list: true, filter: true, show: true, edit: false }
       },
       userId: {
         type: 'reference',
@@ -270,17 +270,17 @@ const orderResource = {
       },
       'user.name': {
         isVisible: { 
-          list: true,  // Show in list for all users
+          list: false,  // Hide from list
           filter: false, 
-          show: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin', 
+          show: false,  // Hide from show view
           edit: false 
         }
       },
       'user.email': {
         isVisible: { 
-          list: true,  // Show in list for all users
+          list: false,  // Hide from list
           filter: false, 
-          show: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin', 
+          show: false,  // Hide from show view
           edit: false 
         }
       },
