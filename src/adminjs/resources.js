@@ -393,28 +393,12 @@ const orderResource = {
     },
     actions: {
       list: {
-        // Both admin and user can see orders list
-        isAccessible: ({ currentAdmin }) => currentAdmin && (currentAdmin.role === 'admin' || currentAdmin.role === 'user'),
-        before: async (request, context) => {
-          // If normal user, filter to show only their orders
-          if (context.currentAdmin && context.currentAdmin.role === 'user') {
-            request.query = {
-              ...request.query,
-              'filters.userId': context.currentAdmin.id
-            };
-          }
-          return request;
-        }
+        // Both admin and user can see all orders
+        isAccessible: ({ currentAdmin }) => currentAdmin && (currentAdmin.role === 'admin' || currentAdmin.role === 'user')
       },
       show: {
-        // Both can view order details
-        isAccessible: ({ currentAdmin, record }) => {
-          if (!currentAdmin) return false;
-          // Admin can see all orders
-          if (currentAdmin.role === 'admin') return true;
-          // User can only see their own orders
-          return record && record.params.userId === currentAdmin.id;
-        }
+        // Both admin and user can view all order details
+        isAccessible: ({ currentAdmin }) => currentAdmin && (currentAdmin.role === 'admin' || currentAdmin.role === 'user')
       },
       new: {
         // Only admin can create orders
