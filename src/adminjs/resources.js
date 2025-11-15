@@ -1,4 +1,5 @@
 import { User, Category, Product, Order, OrderItem, Setting } from '../models/index.js';
+import { Op } from 'sequelize';
 
 // Resource configuration for User
 const userResource = {
@@ -486,22 +487,27 @@ const orderItemResource = {
       name: 'Orders',
       icon: 'List'
     },
+    parent: {
+      name: 'Orders',
+      icon: 'ShoppingCart'
+    },
+    listProperties: ['id', 'order.orderNumber', 'product.name', 'quantity', 'price', 'subtotal'],
     properties: {
       id: {
-        isVisible: { list: false, filter: false, show: true, edit: false }
+        isVisible: { list: true, filter: true, show: true, edit: false }
       },
       orderId: {
-        type: 'reference',
         isVisible: { list: false, filter: true, show: true, edit: true },
-        isRequired: true
-      },
-      productId: {
-        type: 'reference',
-        isVisible: { list: false, filter: true, show: true, edit: true },
-        isRequired: true
+        isRequired: true,
+        reference: 'orders'
       },
       'order.orderNumber': {
         isVisible: { list: true, filter: false, show: true, edit: false }
+      },
+      productId: {
+        isVisible: { list: false, filter: true, show: true, edit: true },
+        isRequired: true,
+        reference: 'products'
       },
       'product.name': {
         isVisible: { list: true, filter: false, show: true, edit: false }
@@ -541,7 +547,54 @@ const orderItemResource = {
     actions: {
       list: {
         // Both admin and user can see order items
-        isAccessible: ({ currentAdmin }) => currentAdmin && (currentAdmin.role === 'admin' || currentAdmin.role === 'user')
+        isAccessible: ({ currentAdmin }) => currentAdmin && (currentAdmin.role === 'admin' || currentAdmin.role === 'user'),
+        handler: async (request, response, context) => {
+          const { resource } = context;
+          
+          // Get all order items with related data
+          const orderItems = await OrderItem.findAll({
+            include: [
+              {
+                model: Order,
+                as: 'order',
+                attributes: ['id', 'orderNumber']
+              },
+              {
+                model: Product,
+                as: 'product',
+                attributes: ['id', 'name']
+              }
+            ],
+            order: [['id', 'DESC']]
+          });
+          
+          console.log('📋 Loaded order items:', orderItems.length);
+          if (orderItems.length > 0) {
+            console.log('Sample item:', JSON.stringify({
+              id: orderItems[0].id,
+              order: orderItems[0].order,
+              product: orderItems[0].product
+            }, null, 2));
+          }
+          
+          // Convert to AdminJS records
+          const records = orderItems.map(item => {
+            return resource.build({
+              ...item.toJSON(),
+              'order.orderNumber': item.order?.orderNumber,
+              'product.name': item.product?.name
+            });
+          });
+          
+          return {
+            records,
+            meta: {
+              total: orderItems.length,
+              perPage: orderItems.length,
+              page: 1
+            }
+          };
+        }
       },
       show: {
         // Both can view order item details
