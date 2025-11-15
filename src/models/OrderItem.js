@@ -40,6 +40,7 @@ const OrderItem = sequelize.define('OrderItem', {
   subtotal: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
+    defaultValue: 0,
     validate: {
       min: 0
     }
@@ -48,8 +49,17 @@ const OrderItem = sequelize.define('OrderItem', {
   tableName: 'order_items',
   timestamps: true,
   hooks: {
-    beforeSave: (orderItem) => {
-      orderItem.subtotal = orderItem.price * orderItem.quantity;
+    beforeCreate: (orderItem) => {
+      // Auto-calculate subtotal before creating
+      orderItem.subtotal = (parseFloat(orderItem.price) * parseInt(orderItem.quantity, 10)).toFixed(2);
+      console.log(`📊 OrderItem beforeCreate: quantity=${orderItem.quantity}, price=${orderItem.price}, subtotal=${orderItem.subtotal}`);
+    },
+    beforeUpdate: (orderItem) => {
+      // Auto-calculate subtotal before updating
+      if (orderItem.changed('price') || orderItem.changed('quantity')) {
+        orderItem.subtotal = (parseFloat(orderItem.price) * parseInt(orderItem.quantity, 10)).toFixed(2);
+        console.log(`📊 OrderItem beforeUpdate: quantity=${orderItem.quantity}, price=${orderItem.price}, subtotal=${orderItem.subtotal}`);
+      }
     }
   }
 });

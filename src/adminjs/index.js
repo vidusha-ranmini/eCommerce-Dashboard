@@ -36,7 +36,7 @@ const adminOptions = {
   ],
   rootPath: '/admin',
   branding: {
-    companyName: 'eCommerce Admin',
+    companyName: 'eCommerce',
     logo: false,
     theme: {
       colors: {
@@ -45,6 +45,7 @@ const adminOptions = {
     }
   },
   dashboard: {
+    component: Components.Dashboard,
     handler: async (request, response, context) => {
       const currentAdmin = context.currentAdmin;
       
