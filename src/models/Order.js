@@ -53,9 +53,11 @@ const Order = sequelize.define('Order', {
   tableName: 'orders',
   timestamps: true,
   hooks: {
-    beforeCreate: (order) => {
+    beforeValidate: (order) => {
+      // Auto-generate order number before validation
       if (!order.orderNumber) {
         order.orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        console.log(`🔢 Generated order number: ${order.orderNumber}`);
       }
     }
   }
