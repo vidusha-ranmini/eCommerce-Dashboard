@@ -1,5 +1,6 @@
 import { User, Category, Product, Order, OrderItem, Setting } from '../models/index.js';
 import { Op } from 'sequelize';
+import { clearSettingsCache } from '../utils/settings.js';
 
 // Resource configuration for User
 const userResource = {
@@ -295,13 +296,50 @@ const orderResource = {
         },
         isRequired: false
       },
-      totalAmount: {
+      subtotal: {
         type: 'number',
         isVisible: { list: true, filter: false, show: true, edit: true },
         isRequired: true,
         props: {
           step: 0.01,
           min: 0
+        }
+      },
+      taxRate: {
+        type: 'number',
+        isVisible: { list: false, filter: false, show: true, edit: true },
+        props: {
+          step: 0.01,
+          min: 0
+        },
+        custom: {
+          after: () => '% (loaded from GLOBAL_TAX_RATE setting)'
+        }
+      },
+      taxAmount: {
+        type: 'number',
+        isVisible: { list: false, filter: false, show: true, edit: false },
+        props: {
+          step: 0.01,
+          min: 0,
+          disabled: true
+        }
+      },
+      shippingCost: {
+        type: 'number',
+        isVisible: { list: false, filter: false, show: true, edit: true },
+        props: {
+          step: 0.01,
+          min: 0
+        }
+      },
+      totalAmount: {
+        type: 'number',
+        isVisible: { list: true, filter: false, show: true, edit: false },
+        props: {
+          step: 0.01,
+          min: 0,
+          disabled: true
         }
       },
       shippingAddress: {
@@ -399,12 +437,26 @@ const orderResource = {
               request.payload.userId = userIdNum;
             }
             
-            // Convert totalAmount to float
-            if (request.payload.totalAmount !== undefined && request.payload.totalAmount !== '') {
-              const amountNum = parseFloat(request.payload.totalAmount);
-              console.log(`Converting totalAmount: "${request.payload.totalAmount}" (${typeof request.payload.totalAmount}) -> ${amountNum} (${typeof amountNum})`);
-              request.payload.totalAmount = amountNum;
+            // Convert numeric fields
+            if (request.payload.subtotal !== undefined && request.payload.subtotal !== '') {
+              request.payload.subtotal = parseFloat(request.payload.subtotal);
             }
+            if (request.payload.taxRate !== undefined && request.payload.taxRate !== '') {
+              request.payload.taxRate = parseFloat(request.payload.taxRate);
+            }
+            if (request.payload.taxAmount !== undefined && request.payload.taxAmount !== '') {
+              request.payload.taxAmount = parseFloat(request.payload.taxAmount);
+            }
+            if (request.payload.shippingCost !== undefined && request.payload.shippingCost !== '') {
+              request.payload.shippingCost = parseFloat(request.payload.shippingCost);
+            }
+            if (request.payload.totalAmount !== undefined && request.payload.totalAmount !== '') {
+              request.payload.totalAmount = parseFloat(request.payload.totalAmount);
+            }
+            
+            // Remove auto-calculated fields from payload
+            delete request.payload.taxAmount;
+            delete request.payload.totalAmount;
             
             // Handle optional fields - convert empty strings to null
             if (request.payload.paymentMethod === '') {
@@ -444,12 +496,20 @@ const orderResource = {
               request.payload.userId = userIdNum;
             }
             
-            // Convert totalAmount to float if present
-            if (request.payload.totalAmount !== undefined && request.payload.totalAmount !== '') {
-              const amountNum = parseFloat(request.payload.totalAmount);
-              console.log(`Converting totalAmount: "${request.payload.totalAmount}" -> ${amountNum}`);
-              request.payload.totalAmount = amountNum;
+            // Convert numeric fields
+            if (request.payload.subtotal !== undefined && request.payload.subtotal !== '') {
+              request.payload.subtotal = parseFloat(request.payload.subtotal);
             }
+            if (request.payload.taxRate !== undefined && request.payload.taxRate !== '') {
+              request.payload.taxRate = parseFloat(request.payload.taxRate);
+            }
+            if (request.payload.shippingCost !== undefined && request.payload.shippingCost !== '') {
+              request.payload.shippingCost = parseFloat(request.payload.shippingCost);
+            }
+            
+            // Remove auto-calculated fields from payload
+            delete request.payload.taxAmount;
+            delete request.payload.totalAmount;
             
             // Handle optional fields
             if (request.payload.paymentMethod === '') {
@@ -710,13 +770,46 @@ const settingResource = {
     },
     properties: {
       key: {
-        isTitle: true
+        isTitle: true,
+        isVisible: { list: true, filter: true, show: true, edit: false }
+      },
+      value: {
+        isVisible: { list: true, filter: false, show: true, edit: true },
+        isRequired: true
+      },
+      description: {
+        isVisible: { list: false, filter: false, show: true, edit: true }
+      },
+      type: {
+        isVisible: { list: true, filter: true, show: true, edit: false },
+        availableValues: [
+          { value: 'string', label: 'String' },
+          { value: 'number', label: 'Number' },
+          { value: 'boolean', label: 'Boolean' },
+          { value: 'json', label: 'JSON' }
+        ]
       },
       createdAt: {
         isVisible: { list: false, filter: true, show: true, edit: false }
       },
       updatedAt: {
-        isVisible: { list: false, filter: false, show: true, edit: false }
+        isVisible: { list: true, filter: false, show: true, edit: false }
+      }
+    },
+    actions: {
+      edit: {
+        after: async (response, request, context) => {
+          // Clear settings cache when a setting is updated
+          clearSettingsCache();
+          console.log('🔄 Settings cache cleared after update');
+          return response;
+        }
+      },
+      bulkDelete: {
+        isAccessible: false // Prevent accidental deletion of settings
+      },
+      delete: {
+        isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
       }
     },
     isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
