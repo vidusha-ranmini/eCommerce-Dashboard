@@ -8,24 +8,40 @@ if (process.env.NODE_ENV !== 'production') {
   dotenv.config();
 }
 
+// Force production mode if running on Railway
+if (process.env.RAILWAY_ENVIRONMENT) {
+  process.env.NODE_ENV = 'production';
+  console.log('🚂 Railway environment detected, setting NODE_ENV to production');
+}
+
 // Build database URL with fallback to individual variables
 let databaseUrl;
+
+// Debug logging for deployment troubleshooting
+console.log('🔍 Environment Debug Info:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('DATABASE_URL exists:', !!process.env.DATABASE_URL);
+console.log('DATABASE_URL length:', process.env.DATABASE_URL?.length || 0);
 
 // In Railway, process.env.DATABASE_URL will contain the correct, 
 // referenced internal connection string if the variable is set.
 if (process.env.DATABASE_URL) {
   // Railway provides DATABASE_URL
   databaseUrl = process.env.DATABASE_URL;
+  console.log('✅ Using DATABASE_URL from environment');
 } else {
   // This fallback block will ONLY run in local development 
   // where the variables are defined in the local .env file.
-  const dbHost = process.env.DB_HOST || 'localhost';
-  const dbPort = process.env.DB_PORT || '5432';
-  const dbName = process.env.DB_NAME || 'ecommercedb';
-  const dbUser = process.env.DB_USER || 'postgres';
-  const dbPassword = process.env.DB_PASSWORD || '1234';
+  // Also handles Railway individual database variables as backup
+  const dbHost = process.env.DB_HOST || process.env.PGHOST || 'localhost';
+  const dbPort = process.env.DB_PORT || process.env.PGPORT || '5432';
+  const dbName = process.env.DB_NAME || process.env.PGDATABASE || 'ecommercedb';
+  const dbUser = process.env.DB_USER || process.env.PGUSER || 'postgres';
+  const dbPassword = process.env.DB_PASSWORD || process.env.PGPASSWORD || '1234';
 
   databaseUrl = `postgresql://${dbUser}:${dbPassword}@${dbHost}:${dbPort}/${dbName}`;
+  console.log('⚠️  Using fallback database configuration');
+  console.log('Host:', dbHost, 'Port:', dbPort, 'Database:', dbName, 'User:', dbUser);
 }
 
 // Validate DATABASE_URL before passing to Sequelize
