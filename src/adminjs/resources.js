@@ -305,10 +305,11 @@ const orderResource = {
       subtotal: {
         type: 'number',
         isVisible: { list: true, filter: false, show: true, edit: true },
-        isRequired: true,
+        isRequired: false,
         props: {
           step: 0.01,
-          min: 0
+          min: 0,
+          placeholder: '0.00 (will be calculated from order items)'
         }
       },
       taxRate: {
@@ -351,7 +352,10 @@ const orderResource = {
       shippingAddress: {
         type: 'textarea',
         isVisible: { list: false, filter: false, show: true, edit: true },
-        isRequired: true
+        isRequired: true,
+        props: {
+          placeholder: 'Enter full shipping address including street, city, state, zip'
+        }
       },
       status: {
         isVisible: { list: true, filter: true, show: true, edit: true },
@@ -420,40 +424,54 @@ const orderResource = {
               console.log('Removed orderNumber from payload (auto-generated)');
             }
 
-            // Convert userId to integer
+            // Convert userId to integer (REQUIRED)
             if (request.payload.userId) {
               const userIdNum = parseInt(request.payload.userId, 10);
               console.log(`Converting userId: "${request.payload.userId}" (${typeof request.payload.userId}) -> ${userIdNum} (${typeof userIdNum})`);
               request.payload.userId = userIdNum;
+            } else {
+              // If userId is missing, this will cause validation error
+              console.error('⚠️ userId is required but missing!');
             }
 
-            // Convert numeric fields
+            // Convert subtotal - default to 0 if empty
             if (request.payload.subtotal !== undefined && request.payload.subtotal !== '') {
               request.payload.subtotal = parseFloat(request.payload.subtotal);
-            }
-            if (request.payload.taxRate !== undefined && request.payload.taxRate !== '') {
-              request.payload.taxRate = parseFloat(request.payload.taxRate);
-            }
-            if (request.payload.taxAmount !== undefined && request.payload.taxAmount !== '') {
-              request.payload.taxAmount = parseFloat(request.payload.taxAmount);
-            }
-            if (request.payload.shippingCost !== undefined && request.payload.shippingCost !== '') {
-              request.payload.shippingCost = parseFloat(request.payload.shippingCost);
-            }
-            if (request.payload.totalAmount !== undefined && request.payload.totalAmount !== '') {
-              request.payload.totalAmount = parseFloat(request.payload.totalAmount);
+            } else {
+              request.payload.subtotal = 0;
+              console.log('Subtotal not provided, defaulting to 0');
             }
 
-            // Remove auto-calculated fields from payload
+            // Convert optional numeric fields
+            if (request.payload.taxRate !== undefined && request.payload.taxRate !== '') {
+              request.payload.taxRate = parseFloat(request.payload.taxRate);
+            } else {
+              // Let the model hook load from settings
+              delete request.payload.taxRate;
+            }
+
+            if (request.payload.shippingCost !== undefined && request.payload.shippingCost !== '') {
+              request.payload.shippingCost = parseFloat(request.payload.shippingCost);
+            } else {
+              // Let the model hook load from settings
+              delete request.payload.shippingCost;
+            }
+
+            // Remove auto-calculated fields from payload (will be calculated in hooks)
             delete request.payload.taxAmount;
             delete request.payload.totalAmount;
 
-            // Handle optional fields - convert empty strings to null
+            // Handle optional string fields - convert empty strings to null
             if (request.payload.paymentMethod === '') {
               request.payload.paymentMethod = null;
             }
             if (request.payload.notes === '') {
               request.payload.notes = null;
+            }
+
+            // Ensure shippingAddress is provided
+            if (!request.payload.shippingAddress || request.payload.shippingAddress.trim() === '') {
+              console.error('⚠️ shippingAddress is required but missing or empty!');
             }
 
             console.log('Processed payload:', JSON.stringify(request.payload, null, 2));

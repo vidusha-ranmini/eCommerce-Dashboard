@@ -53,6 +53,7 @@ const Order = sequelize.define('Order', {
   totalAmount: {
     type: DataTypes.DECIMAL(10, 2),
     allowNull: false,
+    defaultValue: 0,
     validate: {
       min: 0
     }
@@ -88,6 +89,11 @@ const Order = sequelize.define('Order', {
       if (!order.orderNumber) {
         order.orderNumber = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
         console.log(`🔢 Generated order number: ${order.orderNumber}`);
+      }
+      
+      // Ensure subtotal has a value
+      if (order.subtotal === undefined || order.subtotal === null) {
+        order.subtotal = 0;
       }
       
       // Load settings if not provided
