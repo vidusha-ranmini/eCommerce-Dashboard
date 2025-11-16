@@ -1,6 +1,6 @@
 import { User, Product, Order, Category, OrderItem } from '../models/index.js';
 import { Op } from 'sequelize';
-import { sequelize } from '../config/database.js';
+import sequelize from '../config/database.js';
 
 const getDashboardData = async (currentAdmin) => {
   try {

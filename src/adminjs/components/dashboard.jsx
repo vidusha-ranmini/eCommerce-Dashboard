@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { Box, H2, H3, H5, Table, TableHead, TableBody, TableRow, TableCell, Badge, Text } from '@adminjs/design-system';
 import { ApiClient } from 'adminjs';
-import { useTranslation } from 'adminjs';
 
 const api = new ApiClient();
 
@@ -13,9 +12,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // Use the correct API method - getDashboardData fetches from the dashboard handler
         const response = await api.getDashboard();
-        console.log('Dashboard response:', response);
         setData(response.data || response);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
@@ -24,7 +21,6 @@ const Dashboard = () => {
         setLoading(false);
       }
     };
-
     fetchData();
   }, []);
 
