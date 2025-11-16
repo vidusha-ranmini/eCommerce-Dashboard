@@ -3,7 +3,7 @@ import AdminJSExpress from '@adminjs/express';
 import AdminJSSequelize from '@adminjs/sequelize';
 import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
-import { sequelize } from '../config/database.js';
+import sequelize from '../config/database.js';
 import { User } from '../models/index.js';
 import bcrypt from 'bcrypt';
 import {
@@ -56,18 +56,23 @@ const adminOptions = {
       const data = await getDashboardData(currentAdmin);
       return data;
     }
+  },
+  pages: {
+    Dashboard: {
+      component: Components.Dashboard,
+      icon: 'Dashboard',
+      handler: async (request, response, context) => {
+        const currentAdmin = context.currentAdmin;
+        
+        if (!currentAdmin) {
+          return { message: 'Please log in' };
+        }
+
+        const data = await getDashboardData(currentAdmin);
+        return data;
+      }
+    }
   }
-  // pages: {
-  //   settings: {
-  //     component: Components.Dashboard,
-  //     icon: 'Settings',
-  //     handler: async (request, response, context) => {
-  //       return {
-  //         message: 'Settings page - Customize as needed'
-  //       };
-  //     }
-  //   }
-  // }
 };
 
 const adminJs = new AdminJS(adminOptions);

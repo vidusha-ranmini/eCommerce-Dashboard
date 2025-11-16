@@ -26,6 +26,7 @@
     "@adminjs/sequelize": "^4.1.1",
     "adminjs": "^7.8.13",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "connect-pg-simple": "^9.0.1",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
@@ -35,10 +36,13 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
-    "sequelize": "^6.37.1",
+    "sequelize": "^6.37.7",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
     "nodemon": "^3.1.11"
+  },
+  "engines": {
+    "node": ">=18.x"
   }
 }
