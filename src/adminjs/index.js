@@ -48,9 +48,17 @@ const adminOptions = {
     component: Components.Dashboard,
     handler: async (request, response, context) => {
       const currentAdmin = context.currentAdmin;
-      
+
       if (!currentAdmin) {
         return { message: 'Please log in' };
+      }
+
+      // Restrict dashboard access to admin users only
+      if (currentAdmin.role !== 'admin') {
+        return {
+          message: 'Access denied. Dashboard is only available for administrators.',
+          error: 'INSUFFICIENT_PRIVILEGES'
+        };
       }
 
       const data = await getDashboardData(currentAdmin);
@@ -63,9 +71,17 @@ const adminOptions = {
       icon: 'Dashboard',
       handler: async (request, response, context) => {
         const currentAdmin = context.currentAdmin;
-        
+
         if (!currentAdmin) {
           return { message: 'Please log in' };
+        }
+
+        // Restrict dashboard access to admin users only
+        if (currentAdmin.role !== 'admin') {
+          return {
+            message: 'Access denied. Dashboard is only available for administrators.',
+            error: 'INSUFFICIENT_PRIVILEGES'
+          };
         }
 
         const data = await getDashboardData(currentAdmin);
@@ -101,7 +117,7 @@ const authenticate = async (email, password) => {
     }
 
     const isValidPassword = await bcrypt.compare(password, user.password);
-    
+
     if (isValidPassword) {
       return {
         id: user.id,

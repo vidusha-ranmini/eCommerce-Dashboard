@@ -12,11 +12,11 @@ const userResource = {
     },
     properties: {
       password: {
-        isVisible: { 
-          list: false, 
-          filter: false, 
-          show: false, 
-          edit: true 
+        isVisible: {
+          list: false,
+          filter: false,
+          show: false,
+          edit: true
         },
         type: 'password',
         isRequired: true
@@ -39,6 +39,12 @@ const userResource = {
         isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
       },
       bulkDelete: {
+        isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
+      },
+      list: {
+        isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
+      },
+      show: {
         isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
       }
     },
@@ -150,14 +156,14 @@ const productResource = {
           try {
             if (request.payload) {
               console.log('🔧 Creating product with raw payload:', JSON.stringify(request.payload, null, 2));
-              
+
               // Clean up empty strings and convert to proper types
               Object.keys(request.payload).forEach(key => {
                 if (request.payload[key] === '' || request.payload[key] === 'null') {
                   request.payload[key] = null;
                 }
               });
-              
+
               // Ensure numeric values are properly converted
               if (request.payload.price !== undefined && request.payload.price !== null) {
                 const priceNum = parseFloat(request.payload.price);
@@ -167,7 +173,7 @@ const productResource = {
                 request.payload.price = priceNum;
                 console.log('✓ Price converted to:', request.payload.price);
               }
-              
+
               if (request.payload.stock !== undefined && request.payload.stock !== null) {
                 const stockNum = parseInt(request.payload.stock, 10);
                 if (isNaN(stockNum)) {
@@ -176,7 +182,7 @@ const productResource = {
                 request.payload.stock = stockNum;
                 console.log('✓ Stock converted to:', request.payload.stock);
               }
-              
+
               if (request.payload.categoryId !== undefined && request.payload.categoryId !== null) {
                 const catId = parseInt(request.payload.categoryId, 10);
                 if (isNaN(catId)) {
@@ -185,23 +191,23 @@ const productResource = {
                 request.payload.categoryId = catId;
                 console.log('✓ CategoryId converted to:', request.payload.categoryId);
               }
-              
+
               // Handle boolean conversion for isActive
               if (request.payload.isActive !== undefined) {
                 request.payload.isActive = request.payload.isActive === true || request.payload.isActive === 'true' || request.payload.isActive === '1' || request.payload.isActive === 1;
                 console.log('✓ IsActive converted to:', request.payload.isActive);
               }
-              
+
               // Ensure description is null if empty
               if (request.payload.description === '') {
                 request.payload.description = null;
               }
-              
+
               // Ensure imageUrl is null if empty
               if (request.payload.imageUrl === '') {
                 request.payload.imageUrl = null;
               }
-              
+
               console.log('✅ Final processed payload:', JSON.stringify(request.payload, null, 2));
             }
             return request;
@@ -262,35 +268,35 @@ const orderResource = {
       },
       userId: {
         type: 'reference',
-        isVisible: { 
-          list: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin', 
-          filter: true, 
-          show: true, 
+        isVisible: {
+          list: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin',
+          filter: true,
+          show: true,
           edit: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
         },
         isRequired: true
       },
       'user.name': {
-        isVisible: { 
+        isVisible: {
           list: false,  // Hide from list
-          filter: false, 
+          filter: false,
           show: false,  // Hide from show view
-          edit: false 
+          edit: false
         }
       },
       'user.email': {
-        isVisible: { 
+        isVisible: {
           list: false,  // Hide from list
-          filter: false, 
+          filter: false,
           show: false,  // Hide from show view
-          edit: false 
+          edit: false
         }
       },
       orderNumber: {
-        isVisible: { 
-          list: true, 
-          filter: true, 
-          show: true, 
+        isVisible: {
+          list: true,
+          filter: true,
+          show: true,
           edit: false,
           new: false  // Hide in creation form (auto-generated)
         },
@@ -376,10 +382,10 @@ const orderResource = {
       },
       notes: {
         type: 'textarea',
-        isVisible: { 
-          list: false, 
-          filter: false, 
-          show: true, 
+        isVisible: {
+          list: false,
+          filter: false,
+          show: true,
           edit: true,
           new: false  // Hide in creation form
         }
@@ -406,21 +412,21 @@ const orderResource = {
         before: async (request, context) => {
           console.log('\n=== Order Creation - Before Hook ===');
           console.log('Raw payload:', JSON.stringify(request.payload, null, 2));
-          
+
           if (request.payload) {
             // Remove orderNumber if it exists (it's auto-generated)
             if (request.payload.orderNumber !== undefined) {
               delete request.payload.orderNumber;
               console.log('Removed orderNumber from payload (auto-generated)');
             }
-            
+
             // Convert userId to integer
             if (request.payload.userId) {
               const userIdNum = parseInt(request.payload.userId, 10);
               console.log(`Converting userId: "${request.payload.userId}" (${typeof request.payload.userId}) -> ${userIdNum} (${typeof userIdNum})`);
               request.payload.userId = userIdNum;
             }
-            
+
             // Convert numeric fields
             if (request.payload.subtotal !== undefined && request.payload.subtotal !== '') {
               request.payload.subtotal = parseFloat(request.payload.subtotal);
@@ -437,11 +443,11 @@ const orderResource = {
             if (request.payload.totalAmount !== undefined && request.payload.totalAmount !== '') {
               request.payload.totalAmount = parseFloat(request.payload.totalAmount);
             }
-            
+
             // Remove auto-calculated fields from payload
             delete request.payload.taxAmount;
             delete request.payload.totalAmount;
-            
+
             // Handle optional fields - convert empty strings to null
             if (request.payload.paymentMethod === '') {
               request.payload.paymentMethod = null;
@@ -449,10 +455,10 @@ const orderResource = {
             if (request.payload.notes === '') {
               request.payload.notes = null;
             }
-            
+
             console.log('Processed payload:', JSON.stringify(request.payload, null, 2));
           }
-          
+
           return request;
         },
         after: async (response, request, context) => {
@@ -471,7 +477,7 @@ const orderResource = {
         before: async (request, context) => {
           console.log('\n=== Order Edit - Before Hook ===');
           console.log('Raw payload:', JSON.stringify(request.payload, null, 2));
-          
+
           if (request.payload) {
             // Convert userId to integer if present
             if (request.payload.userId) {
@@ -479,7 +485,7 @@ const orderResource = {
               console.log(`Converting userId: "${request.payload.userId}" -> ${userIdNum}`);
               request.payload.userId = userIdNum;
             }
-            
+
             // Convert numeric fields
             if (request.payload.subtotal !== undefined && request.payload.subtotal !== '') {
               request.payload.subtotal = parseFloat(request.payload.subtotal);
@@ -490,11 +496,11 @@ const orderResource = {
             if (request.payload.shippingCost !== undefined && request.payload.shippingCost !== '') {
               request.payload.shippingCost = parseFloat(request.payload.shippingCost);
             }
-            
+
             // Remove auto-calculated fields from payload
             delete request.payload.taxAmount;
             delete request.payload.totalAmount;
-            
+
             // Handle optional fields
             if (request.payload.paymentMethod === '') {
               request.payload.paymentMethod = null;
@@ -502,10 +508,10 @@ const orderResource = {
             if (request.payload.notes === '') {
               request.payload.notes = null;
             }
-            
+
             console.log('Processed payload:', JSON.stringify(request.payload, null, 2));
           }
-          
+
           return request;
         }
       },
@@ -594,7 +600,7 @@ const orderItemResource = {
         isAccessible: ({ currentAdmin }) => currentAdmin && (currentAdmin.role === 'admin' || currentAdmin.role === 'user'),
         handler: async (request, response, context) => {
           const { resource } = context;
-          
+
           // Get all order items with related data
           const orderItems = await OrderItem.findAll({
             include: [
@@ -611,7 +617,7 @@ const orderItemResource = {
             ],
             order: [['id', 'DESC']]
           });
-          
+
           console.log('📋 Loaded order items:', orderItems.length);
           if (orderItems.length > 0) {
             console.log('Sample item:', JSON.stringify({
@@ -620,7 +626,7 @@ const orderItemResource = {
               product: orderItems[0].product
             }, null, 2));
           }
-          
+
           // Convert to AdminJS records
           const records = orderItems.map(item => {
             return resource.build({
@@ -629,7 +635,7 @@ const orderItemResource = {
               'product.name': item.product?.name
             });
           });
-          
+
           return {
             records,
             meta: {
@@ -650,36 +656,36 @@ const orderItemResource = {
         before: async (request, context) => {
           console.log('\n=== OrderItem Creation - Before Hook ===');
           console.log('Raw payload:', JSON.stringify(request.payload, null, 2));
-          
+
           if (request.payload) {
             // Convert orderId to integer
             if (request.payload.orderId) {
               request.payload.orderId = parseInt(request.payload.orderId, 10);
             }
-            
+
             // Convert productId to integer
             if (request.payload.productId) {
               request.payload.productId = parseInt(request.payload.productId, 10);
             }
-            
+
             // Convert quantity to integer
             if (request.payload.quantity) {
               request.payload.quantity = parseInt(request.payload.quantity, 10);
             }
-            
+
             // Convert price to float
             if (request.payload.price !== undefined && request.payload.price !== '') {
               request.payload.price = parseFloat(request.payload.price);
             }
-            
+
             // Remove subtotal if present (it's auto-calculated)
             if (request.payload.subtotal !== undefined) {
               delete request.payload.subtotal;
             }
-            
+
             console.log('Processed payload:', JSON.stringify(request.payload, null, 2));
           }
-          
+
           return request;
         },
         after: async (response, request, context) => {
@@ -697,36 +703,36 @@ const orderItemResource = {
         before: async (request, context) => {
           console.log('\n=== OrderItem Edit - Before Hook ===');
           console.log('Raw payload:', JSON.stringify(request.payload, null, 2));
-          
+
           if (request.payload) {
             // Convert orderId to integer if present
             if (request.payload.orderId) {
               request.payload.orderId = parseInt(request.payload.orderId, 10);
             }
-            
+
             // Convert productId to integer if present
             if (request.payload.productId) {
               request.payload.productId = parseInt(request.payload.productId, 10);
             }
-            
+
             // Convert quantity to integer if present
             if (request.payload.quantity) {
               request.payload.quantity = parseInt(request.payload.quantity, 10);
             }
-            
+
             // Convert price to float if present
             if (request.payload.price !== undefined && request.payload.price !== '') {
               request.payload.price = parseFloat(request.payload.price);
             }
-            
+
             // Remove subtotal if present (it's auto-calculated)
             if (request.payload.subtotal !== undefined) {
               delete request.payload.subtotal;
             }
-            
+
             console.log('Processed payload:', JSON.stringify(request.payload, null, 2));
           }
-          
+
           return request;
         }
       },
@@ -781,13 +787,23 @@ const settingResource = {
       }
     },
     actions: {
+      new: {
+        isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
+      },
       edit: {
+        isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin',
         after: async (response, request, context) => {
           // Clear settings cache when a setting is updated
           clearSettingsCache();
           console.log('🔄 Settings cache cleared after update');
           return response;
         }
+      },
+      list: {
+        isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
+      },
+      show: {
+        isAccessible: ({ currentAdmin }) => currentAdmin && currentAdmin.role === 'admin'
       },
       bulkDelete: {
         isAccessible: false // Prevent accidental deletion of settings
