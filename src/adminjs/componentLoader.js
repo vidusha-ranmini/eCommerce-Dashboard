@@ -1,14 +1,19 @@
 import { ComponentLoader } from 'adminjs';
 import path from 'path';
+import { fileURLToPath } from 'url';
+
+// Resolve __dirname in ESM
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const componentLoader = new ComponentLoader();
 
-// Normalize to POSIX-style path so AdminJS bundler doesn't prepend 'file:' incorrectly on Windows.
-const toPosix = (p) => p.split(path.sep).join('/');
-const dashboardPath = toPosix(path.resolve(process.cwd(), 'src/adminjs/components/dashboard.jsx'));
+// Use an absolute filesystem path (no file: URL) so AdminJS resolver won't
+// attempt to convert a file: URL and produce malformed paths on Windows.
+const dashboardAbsPath = path.join(__dirname, 'components', 'dashboard.jsx');
 
 const Components = {
-  Dashboard: componentLoader.add('Dashboard', dashboardPath),
+  Dashboard: componentLoader.add('Dashboard', dashboardAbsPath),
 };
 
 export { componentLoader, Components };
