@@ -5,7 +5,7 @@ import session from 'express-session';
 import connectPgSimple from 'connect-pg-simple';
 import sequelize from '../config/database.js';
 import { User } from '../models/index.js';
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import {
   userResource,
   categoryResource,
@@ -93,11 +93,20 @@ const adminOptions = {
 
 const adminJs = new AdminJS(adminOptions);
 
-// Session store
+// Session store configuration
 const PgSession = connectPgSimple(session);
+
+// Build connection string - prefer DATABASE_URL if available
+const getConnectionString = () => {
+  if (process.env.DATABASE_URL) {
+    return process.env.DATABASE_URL;
+  }
+  return `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`;
+};
+
 const sessionStore = new PgSession({
   conObject: {
-    connectionString: `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+    connectionString: getConnectionString(),
     ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : false
   },
   tableName: 'session',
@@ -107,18 +116,36 @@ const sessionStore = new PgSession({
 // Authentication
 const authenticate = async (email, password) => {
   try {
+    console.log('\n🔐 AdminJS Login Attempt:');
+    console.log('   Email:', email);
+    console.log('   Password length:', password?.length);
+    
     const user = await User.findOne({
       where: { email },
       attributes: ['id', 'name', 'email', 'password', 'role', 'isActive']
     });
 
-    if (!user || !user.isActive) {
+    console.log('   User found:', user ? 'Yes' : 'No');
+    
+    if (!user) {
+      console.log('   ❌ User not found in database');
+      return null;
+    }
+    
+    if (!user.isActive) {
+      console.log('   ❌ User account is inactive');
       return null;
     }
 
+    console.log('   User role:', user.role);
+    console.log('   Stored hash:', user.password?.substring(0, 20) + '...');
+    console.log('   Comparing password...');
+    
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('   Password valid:', isValidPassword);
 
     if (isValidPassword) {
+      console.log('   ✅ Authentication successful\n');
       return {
         id: user.id,
         email: user.email,
@@ -127,9 +154,10 @@ const authenticate = async (email, password) => {
       };
     }
 
+    console.log('   ❌ Password does not match\n');
     return null;
   } catch (error) {
-    console.error('Authentication error:', error);
+    console.error('❌ Authentication error:', error);
     return null;
   }
 };
