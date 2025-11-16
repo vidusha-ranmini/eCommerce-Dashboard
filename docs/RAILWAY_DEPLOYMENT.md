@@ -88,7 +88,14 @@ ADMIN_PASSWORD=YourSecurePassword123!
 
 1. Railway will automatically deploy after you push to GitHub
 2. Watch the deployment logs in the **"Deployments"** tab
-3. Once deployed, Railway will provide a public URL
+3. The app will automatically:
+   - Connect to PostgreSQL
+   - Create all database tables (users, products, orders, etc.)
+   - Seed default settings
+   - Create admin user from ADMIN_EMAIL and ADMIN_PASSWORD
+4. Once deployed, Railway will provide a public URL
+
+**⚠️ Important:** The first deployment will take longer because it's creating the database schema.
 
 ### Step 7: Verify Deployment
 
@@ -99,6 +106,25 @@ ADMIN_PASSWORD=YourSecurePassword123!
 ---
 
 ## 🐛 Troubleshooting
+
+### Issue: "No tables in database" or "relation does not exist"
+
+**The app now auto-creates tables on startup!** But if you need to manually initialize:
+
+Using Railway CLI:
+```bash
+railway run npm run db:init
+```
+
+Or check deployment logs - you should see:
+```
+🔄 Synchronizing database schema...
+✅ Database synchronized
+📝 Seeding default settings...
+✅ Default settings seeded
+👤 Creating admin user...
+✅ Admin user created
+```
 
 ### Issue: "Invalid credentials" on login
 

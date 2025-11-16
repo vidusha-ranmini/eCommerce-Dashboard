@@ -53,14 +53,7 @@ const adminOptions = {
         return { message: 'Please log in' };
       }
 
-      // Restrict dashboard access to admin users only
-      if (currentAdmin.role !== 'admin') {
-        return {
-          message: 'Access denied. Dashboard is only available for administrators.',
-          error: 'INSUFFICIENT_PRIVILEGES'
-        };
-      }
-
+      // Allow both admin and regular users - they see different data
       const data = await getDashboardData(currentAdmin);
       return data;
     }
@@ -76,14 +69,7 @@ const adminOptions = {
           return { message: 'Please log in' };
         }
 
-        // Restrict dashboard access to admin users only
-        if (currentAdmin.role !== 'admin') {
-          return {
-            message: 'Access denied. Dashboard is only available for administrators.',
-            error: 'INSUFFICIENT_PRIVILEGES'
-          };
-        }
-
+        // Allow both admin and regular users - they see different data
         const data = await getDashboardData(currentAdmin);
         return data;
       }

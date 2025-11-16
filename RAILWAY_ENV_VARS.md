@@ -91,10 +91,22 @@ DATABASE_URL=postgres://...                # Hardcoding breaks on restart
 4. **Build Command:** `npm install`
 5. **Start Command:** `npm start`
 6. **Deploy:** Push to main branch
+7. **Auto-Setup:** App will automatically:
+   - Create all database tables
+   - Seed default settings
+   - Create admin user
+   - Be ready to use!
+
+**Note:** First deployment takes 2-3 minutes for database setup.
 
 ---
 
 ## 🐛 Troubleshooting
+
+**"No tables in database":**
+- Don't worry! App auto-creates tables on startup
+- Check deployment logs for "Database synchronized"
+- Or manually run: `railway run npm run db:init`
 
 **"Invalid credentials" after deploy:**
 ```bash

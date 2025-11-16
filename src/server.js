@@ -5,7 +5,7 @@ import { testConnection } from './config/database.js';
 import sequelize from './config/database.js';
 import { adminJs, adminRouter } from './adminjs/index.js';
 import authRoutes from './routes/authRoutes.js';
-import { User } from './models/index.js';
+import { User, Setting } from './models/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -62,6 +62,35 @@ app.use((req, res) => {
   });
 });
 
+// Seed default settings if they don't exist
+const seedSettings = async () => {
+  try {
+    const settingsCount = await Setting.count();
+    
+    if (settingsCount === 0) {
+      console.log('📝 Seeding default settings...');
+      
+      const defaultSettings = [
+        { key: 'GLOBAL_TAX_RATE', value: '0.10', description: 'Global tax rate (10%)' },
+        { key: 'SHIPPING_COST', value: '5.00', description: 'Standard shipping cost' },
+        { key: 'FREE_SHIPPING_MINIMUM', value: '50.00', description: 'Minimum order for free shipping' },
+        { key: 'CURRENCY', value: 'USD', description: 'Default currency' },
+        { key: 'SITE_NAME', value: 'eCommerce Dashboard', description: 'Site name' },
+        { key: 'SUPPORT_EMAIL', value: 'support@example.com', description: 'Support email address' },
+        { key: 'LOW_STOCK_THRESHOLD', value: '10', description: 'Low stock alert threshold' },
+        { key: 'ORDER_PREFIX', value: 'ORD', description: 'Order number prefix' }
+      ];
+
+      await Setting.bulkCreate(defaultSettings);
+      console.log('✅ Default settings seeded');
+    } else {
+      console.log('ℹ️  Settings already exist');
+    }
+  } catch (error) {
+    console.error('❌ Error seeding settings:', error);
+  }
+};
+
 // Create admin user if doesn't exist
 const createAdminUser = async () => {
   try {
@@ -102,12 +131,14 @@ const startServer = async () => {
       process.exit(1);
     }
 
-    // Sync database (in development)
-    if (process.env.NODE_ENV === 'development') {
-      console.log('Syncing database...');
-      await sequelize.sync({ alter: false }); // Sync without dropping tables
-      console.log('✅ Database synchronized\n');
-    }
+    // Sync database - Create tables if they don't exist
+    // In production, this will create tables on first deployment
+    console.log('🔄 Synchronizing database schema...');
+    await sequelize.sync({ alter: false }); // Creates tables if missing, doesn't drop existing
+    console.log('✅ Database synchronized\n');
+
+    // Seed default settings
+    await seedSettings();
 
     // Create admin user if it doesn't exist
     await createAdminUser();

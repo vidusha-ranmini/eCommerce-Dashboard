@@ -49,7 +49,7 @@ const Dashboard = () => {
     );
   }
 
-  const { welcome, stats, ordersByStatus, recentOrders, lowStockProducts, topProducts } = data;
+  const { welcome, stats, ordersByStatus, recentOrders, lowStockProducts, topProducts, userInfo } = data;
   const isAdmin = lowStockProducts !== undefined;
 
   return (
@@ -60,6 +60,13 @@ const Dashboard = () => {
         <Text fontSize="lg">
           Hello, <strong>{welcome?.name}</strong> - {welcome?.role}
         </Text>
+        {userInfo && (
+          <Box mt="default">
+            <Text fontSize="sm" color="grey60">
+              Email: {userInfo.email}
+            </Text>
+          </Box>
+        )}
       </Box>
 
       {/* Stats Cards */}
@@ -179,12 +186,12 @@ const Dashboard = () => {
       {/* Recent Orders */}
       {recentOrders && recentOrders.length > 0 && (
         <Box bg="white" border="default" borderRadius="default" p="xl">
-          <H5 mb="lg">Recent Orders</H5>
+          <H5 mb="lg">{isAdmin ? 'Recent Orders' : 'My Recent Orders'}</H5>
           <Table>
             <TableHead>
               <TableRow>
                 <TableCell>Order Number</TableCell>
-                {recentOrders[0]?.userName && <TableCell>Customer</TableCell>}
+                {isAdmin && recentOrders[0]?.userName && <TableCell>Customer</TableCell>}
                 <TableCell>Amount</TableCell>
                 <TableCell>Status</TableCell>
                 {recentOrders[0]?.paymentStatus && <TableCell>Payment</TableCell>}
@@ -197,7 +204,7 @@ const Dashboard = () => {
                   <TableCell>
                     <Text fontWeight="bold">{order.orderNumber}</Text>
                   </TableCell>
-                  {order.userName && (
+                  {isAdmin && order.userName && (
                     <TableCell>
                       <Text>{order.userName}</Text>
                       <Text fontSize="sm">{order.userEmail}</Text>
