@@ -17,6 +17,7 @@ A secure Role-Based eCommerce Admin Dashboard built with AdminJS, Sequelize, and
 - [Configuration](#configuration)
 - [Database Setup](#database-setup)
 - [Running the Application](#running-the-application)
+- [Deployment](#deployment)
 - [API Documentation](#api-documentation)
 - [Role-Based Access Control](#role-based-access-control)
 - [Git Workflow](#git-workflow)
@@ -240,6 +241,25 @@ The application will be available at:
 - **AdminJS Dashboard**: http://localhost:3000/admin
 - **API Endpoints**: http://localhost:3000/api
 - **Health Check**: http://localhost:3000/health
+
+## 🚀 Deployment
+
+### Deploy to Railway (with PostgreSQL)
+
+For detailed deployment instructions, see: **[Railway Deployment Guide](docs/RAILWAY_DEPLOYMENT.md)**
+
+Quick steps:
+1. Create Railway project with PostgreSQL
+2. Add your application service
+3. Set environment variables (including `ADMIN_EMAIL` and `ADMIN_PASSWORD`)
+4. Deploy and access via the provided URL
+
+**Important:** After deployment, if you can't login, run:
+```bash
+railway run npm run admin:reset
+```
+
+For other deployment platforms, see: **[Deployment Documentation](docs/DEPLOYMENT.md)**
 
 ## 📚 API Documentation
 

@@ -1,6 +1,6 @@
-import bcrypt from 'bcrypt';
+import 'dotenv/config';
 import { User } from '../models/index.js';
-import { sequelize } from '../config/database.js';
+import sequelize from '../config/database.js';
 
 async function createAdmin() {
   try {
@@ -8,9 +8,12 @@ async function createAdmin() {
     await sequelize.authenticate();
     console.log('Database connected successfully.');
 
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+
     // Check if admin already exists
     const existingAdmin = await User.findOne({
-      where: { email: 'admin@example.com' }
+      where: { email: adminEmail }
     });
 
     if (existingAdmin) {
@@ -20,21 +23,18 @@ async function createAdmin() {
       process.exit(0);
     }
 
-    // Hash the password
-    const hashedPassword = await bcrypt.hash('admin123', 10);
-
-    // Create admin user
+    // Create admin user (password will be hashed by beforeCreate hook)
     const admin = await User.create({
       name: 'Administrator',
-      email: 'admin@example.com',
-      password: hashedPassword,
+      email: adminEmail,
+      password: adminPassword, // Don't hash here - let the model hook do it
       role: 'admin',
       isActive: true
     });
 
     console.log('✅ Admin user created successfully!');
-    console.log('Email:', admin.email);
-    console.log('Password: admin123');
+    console.log('Email:', adminEmail);
+    console.log('Password:', adminPassword);
     console.log('Role:', admin.role);
     
     process.exit(0);

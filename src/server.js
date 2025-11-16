@@ -5,6 +5,7 @@ import { testConnection } from './config/database.js';
 import sequelize from './config/database.js';
 import { adminJs, adminRouter } from './adminjs/index.js';
 import authRoutes from './routes/authRoutes.js';
+import { User } from './models/index.js';
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -61,6 +62,35 @@ app.use((req, res) => {
   });
 });
 
+// Create admin user if doesn't exist
+const createAdminUser = async () => {
+  try {
+    const adminEmail = process.env.ADMIN_EMAIL || 'admin@example.com';
+    const adminPassword = process.env.ADMIN_PASSWORD || 'admin123';
+
+    const existingAdmin = await User.findOne({
+      where: { email: adminEmail }
+    });
+
+    if (!existingAdmin) {
+      await User.create({
+        name: 'Administrator',
+        email: adminEmail,
+        password: adminPassword, // Will be hashed by beforeCreate hook
+        role: 'admin',
+        isActive: true
+      });
+      console.log('✅ Admin user created');
+      console.log(`   Email: ${adminEmail}`);
+      console.log(`   Password: ${adminPassword}`);
+    } else {
+      console.log('ℹ️  Admin user already exists');
+    }
+  } catch (error) {
+    console.error('❌ Error creating admin user:', error);
+  }
+};
+
 // Start server
 const startServer = async () => {
   try {
@@ -78,6 +108,9 @@ const startServer = async () => {
       await sequelize.sync({ alter: false }); // Sync without dropping tables
       console.log('✅ Database synchronized\n');
     }
+
+    // Create admin user if it doesn't exist
+    await createAdminUser();
 
     // Start listening
     app.listen(PORT, () => {

@@ -10,7 +10,9 @@
     "db:migrate": "node src/scripts/migrate.js",
     "db:seed": "node src/scripts/seed.js",
     "migrate:order-fields": "node src/scripts/addOrderFields.js",
-    "seed:settings": "node src/scripts/seedSettings.js"
+    "seed:settings": "node src/scripts/seedSettings.js",
+    "admin:create": "node src/scripts/createAdmin.js",
+    "admin:reset": "node src/scripts/fixAdminPassword.js"
   },
   "keywords": [
     "adminjs",
