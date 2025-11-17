@@ -36,17 +36,14 @@ const adminOptions = {
   ],
   rootPath: '/admin',
   branding: {
-    companyName: 'eCommerce',
+    companyName: 'eCommerce Dashboard',
     logo: false,
+    favicon: '/favicon.svg',
     theme: {
       colors: {
         primary100: '#4285f4'
       }
     }
-  },
-  bundler: {
-    // Ensure external dependencies are marked properly
-    external: ['react', 'react-dom', 'styled-components', '@adminjs/design-system', 'adminjs']
   },
   dashboard: {
     component: Components.Dashboard,

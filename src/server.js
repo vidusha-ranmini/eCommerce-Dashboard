@@ -16,12 +16,20 @@ app.use(cors());
 // AdminJS routes (BEFORE body-parser)
 app.use(adminJs.options.rootPath, adminRouter);
 
+// Serve static files (favicon, etc.)
+app.use(express.static('public'));
+
 // Body-parser middleware (AFTER AdminJS)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // API Routes
 app.use('/api', authRoutes);
+
+// Favicon route
+app.get('/favicon.ico', (req, res) => {
+  res.sendFile('public/favicon.svg', { root: '.' });
+});
 
 // Health check endpoint
 app.get('/health', (req, res) => {

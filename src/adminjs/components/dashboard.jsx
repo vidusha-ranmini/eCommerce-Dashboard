@@ -5,18 +5,23 @@ import { ApiClient, useNotice } from 'adminjs';
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const sendNotice = useNotice();
   const api = new ApiClient();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setLoading(true);
+        setError(null);
         const response = await api.getDashboard();
+        console.log('Dashboard data received:', response);
         setData(response.data || response);
-        setLoading(false);
-      } catch (error) {
-        console.error('Error fetching dashboard data:', error);
+      } catch (err) {
+        console.error('Error fetching dashboard data:', err);
+        setError(err.message || 'Failed to load dashboard data');
         sendNotice({ message: 'Failed to load dashboard data', type: 'error' });
+      } finally {
         setLoading(false);
       }
     };
@@ -31,10 +36,20 @@ const Dashboard = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Box p="xl">
+        <H3 style={{ color: 'red' }}>Error Loading Dashboard</H3>
+        <Text>{error}</Text>
+      </Box>
+    );
+  }
+
   if (!data) {
     return (
       <Box p="xl">
         <H3>No data available</H3>
+        <Text>Please check your connection and try again.</Text>
       </Box>
     );
   }
