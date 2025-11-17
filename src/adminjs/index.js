@@ -38,7 +38,6 @@ const adminOptions = {
   branding: {
     companyName: 'eCommerce Dashboard',
     logo: false,
-    favicon: '/favicon.svg',
     theme: {
       colors: {
         primary100: '#4285f4'
@@ -57,23 +56,6 @@ const adminOptions = {
       // Allow both admin and regular users - they see different data
       const data = await getDashboardData(currentAdmin);
       return data;
-    }
-  },
-  pages: {
-    Dashboard: {
-      component: Components.Dashboard,
-      icon: 'Dashboard',
-      handler: async (request, response, context) => {
-        const currentAdmin = context.currentAdmin;
-
-        if (!currentAdmin) {
-          return { message: 'Please log in' };
-        }
-
-        // Allow both admin and regular users - they see different data
-        const data = await getDashboardData(currentAdmin);
-        return data;
-      }
     }
   }
 };
@@ -155,20 +137,22 @@ const adminRouter = AdminJSExpress.buildAuthenticatedRouter(
   {
     authenticate,
     cookieName: 'adminjs',
-    cookiePassword: process.env.SESSION_SECRET
+    cookiePassword: process.env.SESSION_SECRET || 'secret-key-change-in-production'
   },
   null,
   {
     store: sessionStore,
-    resave: false,
-    saveUninitialized: false,
-    secret: process.env.SESSION_SECRET,
+    resave: true,
+    saveUninitialized: true,
+    secret: process.env.SESSION_SECRET || 'secret-key-change-in-production',
     cookie: {
-      httpOnly: true,
+      httpOnly: process.env.NODE_ENV === 'production',
       secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax',
       maxAge: 1000 * 60 * 60 * 24 // 24 hours
     },
-    name: 'adminjs'
+    name: 'adminjs',
+    proxy: process.env.NODE_ENV === 'production' // Trust proxy in production (Railway)
   }
 );
 
