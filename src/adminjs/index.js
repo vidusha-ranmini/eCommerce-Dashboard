@@ -44,6 +44,10 @@ const adminOptions = {
       }
     }
   },
+  bundler: {
+    // Ensure external dependencies are marked properly
+    external: ['react', 'react-dom', 'styled-components', '@adminjs/design-system', 'adminjs']
+  },
   dashboard: {
     component: Components.Dashboard,
     handler: async (request, response, context) => {

@@ -1,23 +1,22 @@
 import React, { useEffect, useState } from 'react';
-import { Box, H2, H3, H5, Table, TableHead, TableBody, TableRow, TableCell, Badge, Text } from '@adminjs/design-system';
-import { ApiClient } from 'adminjs';
-
-const api = new ApiClient();
+import { Box, H2, H3, H5, Table, TableHead, TableBody, TableRow, TableCell, Badge, Text, Loader } from '@adminjs/design-system';
+import { ApiClient, useNotice } from 'adminjs';
 
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const sendNotice = useNotice();
+  const api = new ApiClient();
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const response = await api.getDashboard();
         setData(response.data || response);
+        setLoading(false);
       } catch (error) {
         console.error('Error fetching dashboard data:', error);
-        setError(error.message);
-      } finally {
+        sendNotice({ message: 'Failed to load dashboard data', type: 'error' });
         setLoading(false);
       }
     };
@@ -26,17 +25,8 @@ const Dashboard = () => {
 
   if (loading) {
     return (
-      <Box p="xl">
-        <H3>Loading dashboard...</H3>
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box p="xl">
-        <H3 style={{ color: '#ff4444' }}>Error loading dashboard</H3>
-        <Text>{error}</Text>
+      <Box p="xl" display="flex" justifyContent="center" alignItems="center" style={{ minHeight: '400px' }}>
+        <Loader />
       </Box>
     );
   }

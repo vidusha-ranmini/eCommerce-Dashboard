@@ -25,6 +25,7 @@
   "author": "",
   "license": "MIT",
   "dependencies": {
+    "@adminjs/design-system": "^4.0.4",
     "@adminjs/express": "^6.1.1",
     "@adminjs/sequelize": "^4.1.1",
     "adminjs": "^7.8.13",
@@ -39,7 +40,10 @@
     "jsonwebtoken": "^9.0.2",
     "pg": "^8.16.3",
     "pg-hstore": "^2.3.4",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
     "sequelize": "^6.37.7",
+    "styled-components": "^5.3.6",
     "tslib": "^2.6.2"
   },
   "devDependencies": {
